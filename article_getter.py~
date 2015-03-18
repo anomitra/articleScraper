@@ -1,0 +1,13 @@
+#Crawl articles from online news sources
+
+import requests
+#import time
+from BeautifulSoup import BeautifulSoup
+import re
+#from fuzzywuzzy import fuzz
+#from fuzzywuzzy import process
+#from time import sleep
+import sys
+
+def slug_maker(term):
+	term=term.lower()
