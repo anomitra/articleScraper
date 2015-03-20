@@ -20,6 +20,9 @@ def crawl_page(url):
 			#print "Trying to get URL... ",
 			r=requests.get(url)
 			#print "Got URL!"
+			if(r.status_code==404):
+				print "Sorry, but the page",url,"does not exist. Exiting."
+				return 0
 			return r.content
 		except Exception as e:
 			print e
@@ -39,6 +42,8 @@ def guardian_image_crawl(url):
 		return "<no image>"
 	return images[0]['src'][2:]
 def guardian_parse(content,num):
+	if(content==0):
+		return
 	parsed_url=BeautifulSoup(content)
 	all_posts=parsed_url.findAll("a",{ "data-link-name" : "article" })
 	timestamps=parsed_url.findAll("time",{ "class" : "fc-item__timestamp" })
@@ -74,6 +79,8 @@ def mirror_urlify(slug):
 	return url
 
 def mirror_parse(content,num):
+	if(content==0):
+		return
 	parsed_url=BeautifulSoup(content)
 	#firstpost=parsed_url.findAll("div",{"class":"article sa-teaser clearfix secondary"})
 	#print posts
@@ -87,6 +94,7 @@ def mirror_parse(content,num):
 		stamp=timestamps[count]
 		#print post
 		title=post.find("a").contents[0]
+		title=title.replace(',','')
 		link=post.find("a")['href']
 		#img=post.find("img")['src']
 		time=stamp['datetime']
@@ -105,7 +113,7 @@ def mirror_parse(content,num):
 	fp.close()
 #name=raw_input("Enter the topic: ")
 #num=int(raw_input("Enter the number of articles: "))
-name="Danny Ings"
+name="Wayne Rooney"
 num=5
-#guardian_parse(crawl_page(guardian_urlify(slug_maker(name))),num)
+guardian_parse(crawl_page(guardian_urlify(slug_maker(name))),num)
 mirror_parse(crawl_page(mirror_urlify(slug_maker(name))),num)
