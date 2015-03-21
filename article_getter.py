@@ -68,7 +68,7 @@ def guardian_parser(content,num):
 		print "TIMESTAMP:",time
 		print "-------------------------------------"
 		outstr=title+", "+link+", "+img+", "+time+"\n"
-		outstr=outstr.encode("utf-8")
+		outstr=outstr
 		fp=open("output.csv","a")
 		fp.write(outstr)
 	fp.close()
@@ -110,7 +110,7 @@ def mirror_parser(content,num):
 		img=""
 		print "-------------------------------------"
 		outstr=title+", "+link+", "+img+", "+time+"\n"
-		outstr=outstr.encode("utf-8")
+		outstr=outstr
 		fp=open("outputMirror.csv","a")
 		fp.write(outstr)
 	fp.close()
@@ -159,18 +159,22 @@ def goal_parser(content,num):
 		info=info[1].find("a")
 		#print info
 		link=info['href']
-		link=goal_url_prefix(link).encode("utf-8")
-		title=info.contents[0].encode("utf-8")
+		link=goal_url_prefix(link)
+		title=info.contents[0]
 		title=title.replace(',','')
 		#print title[0:13]
+		# SKIPPING TRANSFER TALK AND PLAYER RATINGS ARTICLES
 		if(title[0:13]=="Transfer Talk"):
 			count+=1
 			continue
-		blurb=post.find("div", { "class" : "articleSummary" }).contents[0].encode("utf-8")
+		if(title[0:14]=="Player Ratings"):
+			count+=1
+			continue
+		blurb=post.find("div", { "class" : "articleSummary" }).contents[0]
 		blurb=blurb.replace(',','')
 		data=goal_article_crawler(link)
-		img=str(data[2]).encode("utf-8")
-		data[0]=data[0].encode("utf-8")
+		img=str(data[2])
+		data[0]=data[0]
 		print "POST",count
 		print "TITLE:",title
 		print "BLURB:",blurb
@@ -178,9 +182,9 @@ def goal_parser(content,num):
 		print "IMAGE:",img
 		print "TIMESTAMP:",data[1]
 		print "TAGS:",data[0]
-		outstr="".encode("utf-8")
-		outstr=str(title).encode("utf-8")+", "+str(blurb).encode("utf-8")+", "+str(link).encode("utf-8")+", "+str(img).encode("utf-8")+", "+str(data[0]).encode("utf-8")+", "+str(data[1]).encode("utf-8")+"\n"
-		outstr=outstr.encode("utf-8")
+		outstr=""
+		outstr=title.encode("utf-8")+", "+blurb.encode("utf-8")+", "+link.encode("utf-8")+", "+img.encode("utf-8")+", "+data[0].encode("utf-8")+", "+data[1].encode("utf-8")+"\n"
+		outstr=outstr
 		fp=open("outputGoal.csv","a")
 		fp.write(outstr)
 		fp.close()
@@ -190,7 +194,7 @@ def goal_parser(content,num):
 #name=raw_input("Enter the topic: ")
 #num=int(raw_input("Enter the number of articles: "))
 name="Wayne Rooney"
-num=5
+num=50
 #guardian_parser(crawl_page(guardian_urlify(slug_maker(name))),num)
 #mirror_parser(crawl_page(mirror_urlify(slug_maker(name))),num)
 goal_parser(crawl_page(goal_urlify(1)),num)
