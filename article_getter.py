@@ -4,8 +4,8 @@ import requests
 #import time
 from BeautifulSoup import BeautifulSoup
 import re
-#from fuzzywuzzy import fuzz
-#from fuzzywuzzy import process
+from fuzzywuzzy import fuzz
+from fuzzywuzzy import process
 #from time import sleep
 import sys
 
@@ -41,7 +41,7 @@ def guardian_image_crawl(url):
 	if(len(images)==0):
 		return "<no image>"
 	return images[0]['src'][2:]
-def guardian_parse(content,num):
+def guardian_parser(content,num):
 	if(content==0):
 		return
 	parsed_url=BeautifulSoup(content)
@@ -78,7 +78,7 @@ def mirror_urlify(slug):
 	url=base1+slug+base2
 	return url
 
-def mirror_parse(content,num):
+def mirror_parser(content,num):
 	if(content==0):
 		return
 	parsed_url=BeautifulSoup(content)
@@ -111,9 +111,79 @@ def mirror_parse(content,num):
 		fp=open("outputMirror.csv","a")
 		fp.write(outstr)
 	fp.close()
+	
+#	CODE TO CRAWL GOAL.COM	#
+
+def goal_urlify(num):
+	base="http://www.goal.com/en-gb/news/archive/"
+	base+=str(num)
+	return base
+	
+def goal_url_prefix(txt):
+	base="http://www.goal.com"
+	return base+txt
+
+def goal_article_crawler(url):
+	raw=crawl_page(url)
+	parsed_url=BeautifulSoup(raw)
+	out=["","",""]
+	info=parsed_url.find("li",{"class":"tags"})
+	if(len(info)==0):
+		out[0]="Uncategorized"
+	tags=""
+	#print "TAGS INCOMING!!"
+	for tag in info:
+		#print tag.string.strip(',').strip('\n'),
+		tags+=tag.string.strip(',').strip('\n')+"-"
+	out[0]=tags
+	time=parsed_url.find("time")['datetime']
+	out[1]=time
+	img=parsed_url.find("img",{"class":" article-image"})
+	out[2]=img['src']
+	
+	return out
+	
+def goal_parser(content,num):
+	count=0
+	if(content==0):
+		return
+	parsed_url=BeautifulSoup(content)
+	all_posts=parsed_url.findAll("div",{"class":"articleInfo"})
+	while (count<num):
+		post=all_posts[count]
+		#print post
+		info=post.findAll("div", { "class" : None })
+		info=info[1].find("a")
+		#print info
+		link=info['href']
+		link=goal_url_prefix(link).encode("utf-8")
+		title=info.contents[0].encode("utf-8")
+		print title[0:13]
+		if(title[0:13]=="Transfer Talk"):
+			count+=1
+			continue
+		blurb=post.find("div", { "class" : "articleSummary" }).contents[0].encode("utf-8")
+		data=goal_article_crawler(link)
+		img=str(data[2]).encode("utf-8")
+		outstr=str(title).encode("utf-8")+", "+str(blurb).encode("utf-8")+", "+str(link).encode("utf-8")+", "+str(img).encode("utf-8")+", "+str(data[0]).encode("utf-8")+", "+str(data[1]).encode("utf-8")+"\n"
+		print "POST",count
+		print "TITLE:",title
+		print "BLURB:",blurb
+		print "LINK:",link
+		print "IMAGE:",img
+		print "TIMESTAMP:",data[1]
+		print "TAGS:",data[0]
+		outstr=outstr.encode("utf-8")
+		fp=open("outputGoal.csv","a")
+		fp.write(outstr)
+		fp.close()
+		count+=1
+		
+		
 #name=raw_input("Enter the topic: ")
 #num=int(raw_input("Enter the number of articles: "))
 name="Wayne Rooney"
 num=5
-guardian_parse(crawl_page(guardian_urlify(slug_maker(name))),num)
-mirror_parse(crawl_page(mirror_urlify(slug_maker(name))),num)
+#guardian_parser(crawl_page(guardian_urlify(slug_maker(name))),num)
+#mirror_parser(crawl_page(mirror_urlify(slug_maker(name))),num)
+goal_parser(crawl_page(goal_urlify(1)),num)
