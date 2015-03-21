@@ -53,6 +53,7 @@ def guardian_parser(content,num):
 		stamp=timestamps[count]
 		count=count+1
 		title=post.contents[0]
+		title=title.replace(',','')
 		link=post['href']
 		img=guardian_image_crawl(link)
 		time=stamp['datetime']
@@ -158,11 +159,13 @@ def goal_parser(content,num):
 		link=info['href']
 		link=goal_url_prefix(link).encode("utf-8")
 		title=info.contents[0].encode("utf-8")
-		print title[0:13]
+		title=title.replace(',','')
+		#print title[0:13]
 		if(title[0:13]=="Transfer Talk"):
 			count+=1
 			continue
 		blurb=post.find("div", { "class" : "articleSummary" }).contents[0].encode("utf-8")
+		blurb=blurb.replace(',','')
 		data=goal_article_crawler(link)
 		img=str(data[2]).encode("utf-8")
 		outstr=str(title).encode("utf-8")+", "+str(blurb).encode("utf-8")+", "+str(link).encode("utf-8")+", "+str(img).encode("utf-8")+", "+str(data[0]).encode("utf-8")+", "+str(data[1]).encode("utf-8")+"\n"
