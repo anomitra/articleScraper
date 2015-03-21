@@ -1,5 +1,7 @@
 #Crawl articles from online news sources
 
+# coding=utf-8
+
 import requests
 #import time
 from BeautifulSoup import BeautifulSoup
@@ -168,7 +170,7 @@ def goal_parser(content,num):
 		blurb=blurb.replace(',','')
 		data=goal_article_crawler(link)
 		img=str(data[2]).encode("utf-8")
-		outstr=str(title).encode("utf-8")+", "+str(blurb).encode("utf-8")+", "+str(link).encode("utf-8")+", "+str(img).encode("utf-8")+", "+str(data[0]).encode("utf-8")+", "+str(data[1]).encode("utf-8")+"\n"
+		data[0]=data[0].encode("utf-8")
 		print "POST",count
 		print "TITLE:",title
 		print "BLURB:",blurb
@@ -176,6 +178,8 @@ def goal_parser(content,num):
 		print "IMAGE:",img
 		print "TIMESTAMP:",data[1]
 		print "TAGS:",data[0]
+		outstr="".encode("utf-8")
+		outstr=str(title).encode("utf-8")+", "+str(blurb).encode("utf-8")+", "+str(link).encode("utf-8")+", "+str(img).encode("utf-8")+", "+str(data[0]).encode("utf-8")+", "+str(data[1]).encode("utf-8")+"\n"
 		outstr=outstr.encode("utf-8")
 		fp=open("outputGoal.csv","a")
 		fp.write(outstr)
