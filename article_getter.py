@@ -50,6 +50,7 @@ def guardian_parser(content,num):
 	all_posts=parsed_url.findAll("a",{ "data-link-name" : "article" })
 	timestamps=parsed_url.findAll("time",{ "class" : "fc-item__timestamp" })
 	count=0
+	print "NUM IS",num
 	while (count<num):
 		post=all_posts[count*2+1]
 		stamp=timestamps[count]
@@ -151,6 +152,7 @@ def goal_parser(content,num):
 	if(content==0):
 		return
 	parsed_url=BeautifulSoup(content)
+	postsScraped=0
 	all_posts=parsed_url.findAll("div",{"class":"articleInfo"})
 	while (count<num):
 		post=all_posts[count]
@@ -182,6 +184,7 @@ def goal_parser(content,num):
 		print "IMAGE:",img
 		print "TIMESTAMP:",data[1]
 		print "TAGS:",data[0]
+		print "COUNT ",count,"POSTS ",postsScraped
 		outstr=""
 		outstr=title.encode("utf-8")+", "+blurb.encode("utf-8")+", "+link.encode("utf-8")+", "+img.encode("utf-8")+", "+data[0].encode("utf-8")+", "+data[1].encode("utf-8")+"\n"
 		outstr=outstr
@@ -189,12 +192,14 @@ def goal_parser(content,num):
 		fp.write(outstr)
 		fp.close()
 		count+=1
-		
+		postsScraped+=1
+	if(postsScraped<num):
+		goal_parser(crawl_page(goal_urlify(count/50+1)),num-postsScraped)
 		
 #name=raw_input("Enter the topic: ")
 #num=int(raw_input("Enter the number of articles: "))
 name="Wayne Rooney"
-num=50
+num=104
 #guardian_parser(crawl_page(guardian_urlify(slug_maker(name))),num)
 #mirror_parser(crawl_page(mirror_urlify(slug_maker(name))),num)
 goal_parser(crawl_page(goal_urlify(1)),num)
