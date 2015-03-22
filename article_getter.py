@@ -104,26 +104,25 @@ def mirror_article_crawler(url):
 	
 	return out
 	
-def mirror_parser(content,num):
+def mirror_parser(content,num,page,total_posts):
 	count=0
 	if(content==0):
 		return
 	parsed_url=BeautifulSoup(content)
-	postsScraped=0
 	all_posts=parsed_url.findAll("div",{"class":"teaser-info"})
-	while (count<num):
-		post=all_posts[count]
+	for post in all_posts:
 		#print post
 		info=post.find("a")
 		link=info['href']
 		title=info.contents[0]
-		title=title.replace(',','')
+		title=title.replace(',','').strip()
 		blurb=post.find("p").contents[0]
-		blurb=blurb.replace(',','')
+		blurb=blurb.replace(',','').strip()
 		time=post.find("time")['datetime']
 		data=mirror_article_crawler(link)
 		img=str(data[1])
 		data[0]=data[0]
+		count+=1
 		print "POST",count
 		print "TITLE:",title
 		print "BLURB:",blurb
@@ -131,18 +130,18 @@ def mirror_parser(content,num):
 		print "IMAGE:",img
 		print "TIMESTAMP:",time
 		print "TAGS:",data[0]
-		print "COUNT ",count,"POSTS ",postsScraped
+		total_posts+=1
+		print "COUNT ",count,"TOTAL POSTS ",total_posts,"NUM",num
 		outstr=""
 		outstr=title.encode("utf-8")+", "+blurb.encode("utf-8")+", "+link.encode("utf-8")+", "+img.encode("utf-8")+", "+data[0].encode("utf-8")+", "+time.encode("utf-8")+"\n"
 		outstr=outstr
 		fp=open("outputMirror.csv","a")
 		fp.write(outstr)
 		fp.close()
-		count+=1
-		postsScraped+=1
-		if(postsScraped>=14):
-			page+=1
-			mirror_parser(crawl_page(mirror_urlify(page)),num-postsScraped)
+		if(count==num):
+			return
+	page+=1
+	mirror_parser(crawl_page(mirror_urlify(page)),num-total_posts,page,total_posts)
 
 """def mirror_urlify(slug):
 	base1="http://www.mirror.co.uk/all-about/"
@@ -270,5 +269,5 @@ name="Wayne Rooney"
 num=25
 #guardian_parser(crawl_page(guardian_urlify(slug_maker(name))),num)
 page=1
-mirror_parser(crawl_page(mirror_urlify(page)),num)
+mirror_parser(crawl_page(mirror_urlify(page)),num,page,0)
 #goal_parser(crawl_page(goal_urlify(1)),num)
