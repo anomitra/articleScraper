@@ -76,13 +76,81 @@ def guardian_parser(content,num):
 
 #	CODE FOR CRAWLING THE MIRROR	#
 
-def mirror_urlify(slug):
+def mirror_urlify(num):
+	base="http://www.mirror.co.uk/sport/football/news/?pageNumber="
+	base+=str(num)
+	return base
+
+def mirror_article_crawler(url):
+	raw=crawl_page(url)
+	parsed_url=BeautifulSoup(raw)
+	out=["","",""]
+	info=parsed_url.find("div",{"class":"related-widget"})
+	info=info.findAll("a")
+	if(len(info)==0):
+		out[0]="Uncategorized"
+	tags=""
+	#print "TAGS INCOMING!!"
+	for tag in info:
+		#print tag.string.strip(',').strip('\n'),
+		tags+=tag.contents[0]+"-"
+	#print tags
+	out[0]=tags[0:len(tags)-1]
+	img=parsed_url.find("div",{"class":"image-credit-wrapper"})
+	if(img==None): out[1]="<no image>"
+	else: 
+		img=img.find("img")
+		out[1]=img['src']
+	
+	return out
+	
+def mirror_parser(content,num):
+	count=0
+	if(content==0):
+		return
+	parsed_url=BeautifulSoup(content)
+	postsScraped=0
+	all_posts=parsed_url.findAll("div",{"class":"teaser-info"})
+	while (count<num):
+		post=all_posts[count]
+		#print post
+		info=post.find("a")
+		link=info['href']
+		title=info.contents[0]
+		title=title.replace(',','')
+		blurb=post.find("p").contents[0]
+		blurb=blurb.replace(',','')
+		time=post.find("time")['datetime']
+		data=mirror_article_crawler(link)
+		img=str(data[1])
+		data[0]=data[0]
+		print "POST",count
+		print "TITLE:",title
+		print "BLURB:",blurb
+		print "LINK:",link
+		print "IMAGE:",img
+		print "TIMESTAMP:",time
+		print "TAGS:",data[0]
+		print "COUNT ",count,"POSTS ",postsScraped
+		outstr=""
+		outstr=title.encode("utf-8")+", "+blurb.encode("utf-8")+", "+link.encode("utf-8")+", "+img.encode("utf-8")+", "+data[0].encode("utf-8")+", "+time.encode("utf-8")+"\n"
+		outstr=outstr
+		fp=open("outputMirror.csv","a")
+		fp.write(outstr)
+		fp.close()
+		count+=1
+		postsScraped+=1
+		if(postsScraped>=14):
+			page+=1
+			mirror_parser(crawl_page(mirror_urlify(page)),num-postsScraped)
+
+"""def mirror_urlify(slug):
 	base1="http://www.mirror.co.uk/all-about/"
 	base2="?all=true"
 	url=base1+slug+base2
 	return url
 
-def mirror_parser(content,num):
+ def mirror_parser(content,num):
 	if(content==0):
 		return
 	parsed_url=BeautifulSoup(content)
@@ -114,7 +182,7 @@ def mirror_parser(content,num):
 		outstr=outstr
 		fp=open("outputMirror.csv","a")
 		fp.write(outstr)
-	fp.close()
+	fp.close()"""
 	
 #	CODE TO CRAWL GOAL.COM	#
 
@@ -199,7 +267,8 @@ def goal_parser(content,num):
 #name=raw_input("Enter the topic: ")
 #num=int(raw_input("Enter the number of articles: "))
 name="Wayne Rooney"
-num=104
+num=25
 #guardian_parser(crawl_page(guardian_urlify(slug_maker(name))),num)
-#mirror_parser(crawl_page(mirror_urlify(slug_maker(name))),num)
-goal_parser(crawl_page(goal_urlify(1)),num)
+page=1
+mirror_parser(crawl_page(mirror_urlify(page)),num)
+#goal_parser(crawl_page(goal_urlify(1)),num)
