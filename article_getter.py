@@ -37,40 +37,71 @@ def guardian_urlify(slug):
 	url=base+slug
 	return url
 
-def guardian_image_crawl(url):
+def guardian_article_crawl(url):
 	parsed_url=BeautifulSoup(crawl_page(url))
+	out=["","","",""]
+	
+	#IMAGE
+	
 	images=parsed_url.findAll("img",{"itemprop":"contentURL representativeOfPage"})
 	if(len(images)==0):
-		return "<no image>"
-	return images[0]['src'][2:]
+		out[0]="<no image>".encode("utf-8")
+	else:
+		out[0]=images[0]['src'][2:].encode("utf-8")
+	
+	#TITLE
+	
+	title=parsed_url.find("title")
+	out[1]=title.contents[0].replace(',','').encode("utf-8")
+	
+	#TIMESTAMP
+	
+	out[2]=parsed_url.find("time",{"itemprop":"datePublished"})['datetime'].encode("utf-8")
+	
+	#TAGS
+	
+	tags=parsed_url.find("ul",{"class":"keyword-list inline-list"})
+	if(tags==None):
+		out[3]="<no tags>"
+		return out
+	tags=tags.findAll("li",{"class":"inline-list__item "})
+	#print tags
+	taglist=""
+	for tag in tags:
+		s=tag.find("a",{"itemprop":"keywords"}).contents[0].strip()
+		#print s
+		taglist+=s+"-"
+	out[3]=taglist[0:len(taglist)-1].encode("utf-8")
+
+	return out
+	
 def guardian_parser(content,num):
 	if(content==0):
 		return
 	parsed_url=BeautifulSoup(content)
-	all_posts=parsed_url.findAll("a",{ "data-link-name" : "article" })
-	timestamps=parsed_url.findAll("time",{ "class" : "fc-item__timestamp" })
+	all_posts=parsed_url.findAll("div",{ "class" : "fc-item__container" })
+	#timestamps=parsed_url.findAll("time",{ "class" : "fc-item__timestamp" })
 	count=0
-	print "NUM IS",num
+	#print "NUM IS",num
 	while (count<num):
-		post=all_posts[count*2+1]
-		stamp=timestamps[count]
+		post=all_posts[count]
+		#stamp=timestamps[count]
 		count=count+1
-		title=post.contents[0]
-		title=title.replace(',','')
-		link=post['href']
-		img=guardian_image_crawl(link)
-		time=stamp['datetime']
+		link=post.find("a",{"class":"u-faux-block-link__overlay"})['href']
+		out=guardian_article_crawl(link)
+		#time=stamp['datetime']
 		#print post
 		#print "-------------------------------------"
 		print "POST",count
-		print "TITLE:",title
+		print "TITLE:",out[1]
 		print "LINK:",link
-		print "IMAGE:",img
-		print "TIMESTAMP:",time
+		print "IMAGE:",out[0]
+		print "TIMESTAMP:",out[2]
+		print "TAGS:",out[3] 
 		print "-------------------------------------"
-		outstr=title+", "+link+", "+img+", "+time+"\n"
-		outstr=outstr
-		fp=open("output.csv","a")
+		outstr=out[1]+", "+link.encode("utf-8")+", "+out[0]+", "+out[2]+", "+out[3]+"\n"
+		#outstr=outstr
+		fp=open("outputGuardian.csv","a")
 		fp.write(outstr)
 	fp.close()
 
@@ -269,12 +300,12 @@ def goal_parser(content,num):
 		
 #name=raw_input("Enter the topic: ")
 #num=int(raw_input("Enter the number of articles: "))
-name="Wayne Rooney"
-num=25
-#guardian_parser(crawl_page(guardian_urlify(slug_maker(name))),num)
-page=1
+#name="Wayne Rooney"
+num=35
+guardian_parser(crawl_page("http://www.theguardian.com/football/all"),num)
+#page=1
 #mirror_parser(crawl_page(mirror_urlify(page)),num,page,0)
 #goal_parser(crawl_page(goal_urlify(1)),num)
-str1="Southampton vs Burnley Live: English Barclays Premier League"
-str2="Live: English Barclays Premier League"
-print fuzz.partial_ratio(str1,str2)
+#str1="Southampton vs Burnley Live: English Barclays Premier League"
+#str2="Live: English Barclays Premier League"
+#print fuzz.partial_ratio(str1,str2)
