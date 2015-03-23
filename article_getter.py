@@ -116,6 +116,10 @@ def mirror_parser(content,num,page,total_posts):
 		link=info['href']
 		title=info.contents[0]
 		title=title.replace(',','').strip()
+		# SKIPPING LIVE MATCH ARTICLES
+		skip="Live: English Barclays Premier League"
+		if(fuzz.partial_ratio(title,skip)==100):
+			continue
 		blurb=post.find("p").contents[0]
 		blurb=blurb.replace(',','').strip()
 		time=post.find("time")['datetime']
@@ -269,5 +273,8 @@ name="Wayne Rooney"
 num=25
 #guardian_parser(crawl_page(guardian_urlify(slug_maker(name))),num)
 page=1
-mirror_parser(crawl_page(mirror_urlify(page)),num,page,0)
+#mirror_parser(crawl_page(mirror_urlify(page)),num,page,0)
 #goal_parser(crawl_page(goal_urlify(1)),num)
+str1="Southampton vs Burnley Live: English Barclays Premier League"
+str2="Live: English Barclays Premier League"
+print fuzz.partial_ratio(str1,str2)
