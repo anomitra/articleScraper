@@ -34,7 +34,7 @@ def player_crawl(url,name):
     f.close()
 
 def team_page_crawler(num):
-    url="http://www.whoscored.com/Teams/"+num
+    url="http://www.whoscored.com/Teams/"+str(num)
     display = Display(visible=0, size=(800, 600))  
     display.start()  
     browser = webdriver.Firefox()  
