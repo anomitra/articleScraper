@@ -48,12 +48,22 @@ def fox_article_crawler(url):
 	out[0]=taglist
 	blurb=parsed_url.find("div",{"class":"story-content without-dateLine"})
 	if(blurb==None):
-		blurb="<no summary found>"
-	else:
+		blurb=parsed_url.find("div",{"class":"articleContent articleBody"})
+		if(blurb==None):
+			blurb="<no summary found>"
+			out[1]=blurb
+			return out
 		blurb=blurb.find("p").getText()
 		blurb=str(blurb)
 		blurb=blurb.encode("utf-8")
 		re.sub(r'\<.+?\>\s*', '', blurb)
+		out[1]=blurb
+		#print out
+		return out
+	blurb=blurb.find("p").getText()		
+	blurb=str(blurb)
+	blurb=blurb.encode("utf-8")
+	re.sub(r'\<.+?\>\s*', '', blurb)
 	out[1]=blurb
 	#print out
 	return out
