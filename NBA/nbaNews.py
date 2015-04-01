@@ -34,27 +34,28 @@ def fox_article_crawler(url):
 	raw=crawl_page(url)
 	parsed_url=BeautifulSoup(raw)
 	tags=parsed_url.find("div",{"class":"story-tags"})
+	out=["",""]
+	taglist=""
 	if(tags==None):
 		tags="<no tags>"
 	else:
 		tags=tags.findAll("a")
-	out=["",""]
-	taglist=""
-	for tag in tags:
-		if(tag.find("span")==-1):
-			continue
-		s=tag.find("span").contents[0].strip()
-		taglist+=s+"-"
+		for tag in tags:
+			if(tag.find("span")==-1):
+				continue
+			s=tag.find("span").contents[0].strip()
+			taglist+=s+"-"
 	out[0]=taglist
 	blurb=parsed_url.find("div",{"class":"story-content without-dateLine"})
 	if(blurb==None):
 		blurb="<no summary found>"
 	else:
-		blurb=blurb.find("p")
+		blurb=blurb.find("p").getText()
 		blurb=str(blurb)
 		blurb=blurb.encode("utf-8")
 		re.sub(r'\<.+?\>\s*', '', blurb)
-		out[1]=blurb
+	out[1]=blurb
+	#print out
 	return out
 	
 def fox_parser(content,num):
@@ -64,6 +65,8 @@ def fox_parser(content,num):
 	parsed_url=BeautifulSoup(content)
 	all_posts=parsed_url.findAll("article")
 	for post in all_posts:
+		if(count==num):
+			break
 		info=post.find("a")
 		link=info['href'] #ARTICLE LINK
 		title=info.find("h3",{"class":"buzzer-title"}).contents[0]
